@@ -1,6 +1,7 @@
 import pandas as pd
 import datetime as dt
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 class iot:
     def __init__(self):
@@ -39,16 +40,17 @@ class iot:
     def MeanTemperature(self,typ):
         df = self.df
         df["date"] = pd.to_datetime(df["date"])
-        for miesiac in range(1, 6):
-            if typ == 1:
-                tempout = df.groupby(["month"])["T_out"].mean()
-                plt.title("Mean Temperature")
-            elif typ == 2:
-                tempout = df.groupby(["month"])["T_out"].max()
-                plt.title("Max Temperature")
-            else:
-                tempout = df.groupby(["month"])["T_out"].min()
-                plt.title("Min Temperature")
+
+        if typ == 1:
+            tempout = df.groupby(["month"])["T_out"].mean()
+            plt.title("Mean Temperature")
+        elif typ == 2:
+            tempout = df.groupby(["month"])["T_out"].max()
+            plt.title("Max Temperature")
+        else:
+            tempout = df.groupby(["month"])["T_out"].min()
+            plt.title("Min Temperature")
+
         plt.bar(range(1,6), tempout)
         plt.ylabel("Temperature (C)")
         plt.xlabel("Month")
@@ -71,5 +73,16 @@ class iot:
         plt.plot(time, Temp, label="Temp")
         plt.legend(Temp.columns, loc="upper right",fontsize="small")
         plt.xticks(time[::6], rotation=90)
+        plt.show()
+    def AvgEnergyConsumption(self):
+        df = self.df
+        daily = df[["data", "time", "Appliances"]].set_index(df["date"].dt.day_name())
+        daily = daily.groupby(["time", "date"])["Appliances"].mean()
+        daily_matrix = daily.unstack()
+        plt.figure(figsize=(12, 8))
+        sns.heatmap(daily_matrix, cmap='YlGnBu', annot=False)
+        plt.title("Average Appliances Energy Consumption by Day and Time")
+        plt.xlabel("Day of Week")
+        plt.ylabel("Time of Day")
         plt.show()
 
