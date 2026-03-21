@@ -3,6 +3,7 @@ import datetime as dt
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
 class iot:
     def __init__(self):
         self.df = pd.read_csv("energydata_complete.csv")
@@ -37,7 +38,7 @@ class iot:
             plt.xticks(df["time"][::6],rotation=90)
             plt.show()
 
-    def MeanTemperature(self,typ):
+    def TemperatureOut(self,typ):
         df = self.df
         df["date"] = pd.to_datetime(df["date"])
 
@@ -74,10 +75,14 @@ class iot:
         plt.legend(Temp.columns, loc="upper right",fontsize="small")
         plt.xticks(time[::6], rotation=90)
         plt.show()
+
     def AvgEnergyConsumption(self):
         df = self.df
-        daily = df[["data", "time", "Appliances"]].set_index(df["date"].dt.day_name())
-        daily = daily.groupby(["time", "date"])["Appliances"].mean()
+        day_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        daily = df[["data", "time", "Appliances"]]
+        daily["data"] = pd.to_datetime(daily["data"]).dt.day_name()
+        daily["data"] = pd.Categorical(daily["data"], categories=day_order, ordered=True)
+        daily = daily.groupby(["time", "data"])["Appliances"].mean()
         daily_matrix = daily.unstack()
         plt.figure(figsize=(12, 8))
         sns.heatmap(daily_matrix, cmap='YlGnBu', annot=False)
