@@ -31,7 +31,7 @@ class iot:
         else:
             if int(day) < 10:
                 day = "0" + str(day)
-            df = df[(df["date"] == f"2016-0{month}-{day}")]
+            df = df[(df["data"] == f"2016-0{month}-{day}")]
             plt.plot(df["time"], df["Windspeed"])
             plt.ylabel("Wind Speed (m/s)")
             plt.xlabel("Time")
@@ -41,7 +41,7 @@ class iot:
     def TemperatureOut(self,typ):
         df = self.df
         df["date"] = pd.to_datetime(df["date"])
-
+        typ = int(typ)
         if typ == 1:
             tempout = df.groupby(["month"])["T_out"].mean()
             plt.title("Mean Temperature")
