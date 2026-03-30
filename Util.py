@@ -1,5 +1,4 @@
 import pandas as pd
-import datetime as dt
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -20,13 +19,15 @@ class iot:
             raise ValueError("Invalid month")
         else:
             df = df[(df["data"] >= f"2016-0{month}-01") & (df["data"] <= f"2016-0{month}-31")]
-            plt.bar(df["date"].dt.strftime("%d").str.replace("0",""), df["rv1"])
+            df["data"] = df["data"].str.split("-").str[2]
+            df["data"] = df["data"].apply(lambda x: x.replace("0", "") if x.startswith("0") else x)
+            plt.bar(df["data"], df["rv1"])
             plt.xticks(rotation=90)
             plt.show()
 
     def GetHourlyWindSpeed(self,month,day):
         df = self.df
-        if (month > "5" or month < "1") or (day > "31" or day < "0"):
+        if (month > "5" or month < "1") or (day > "31" or day < "1"):
             raise ValueError("Invalid day")
         else:
             if int(day) < 10:
@@ -40,7 +41,6 @@ class iot:
 
     def TemperatureOut(self,typ):
         df = self.df
-        df["date"] = pd.to_datetime(df["date"])
         typ = int(typ)
         if typ == 1:
             tempout = df.groupby(["month"])["T_out"].mean()
@@ -67,7 +67,6 @@ class iot:
         df = self.df
         Temp = df[df["data"] == f"2016-0{month}-{day}"][["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9"]]
         time = df[df["data"] == f"2016-0{month}-{day}"]["time"]
-        Temp.value_counts()
         Temp.columns = ["kitchen", "living room", "laundry room", "office room", "bathroom", "outside north",
                         "ironing room", "teenager room", "parents room"]
 
@@ -79,13 +78,13 @@ class iot:
     def AvgEnergyConsumption(self):
         df = self.df
         day_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-        daily = df[["data", "time", "Appliances"]]
+        daily = df[["data", "time", "Appliances"]].copy()
         daily["data"] = pd.to_datetime(daily["data"]).dt.day_name()
         daily["data"] = pd.Categorical(daily["data"], categories=day_order, ordered=True)
         daily = daily.groupby(["time", "data"])["Appliances"].mean()
         daily_matrix = daily.unstack()
         plt.figure(figsize=(12, 8))
-        sns.heatmap(daily_matrix, cmap='YlGnBu', annot=False)
+        sns.heatmap(daily_matrix, cmap='coolwarm', annot=False)
         plt.title("Average Appliances Energy Consumption by Day and Time")
         plt.xlabel("Day of Week")
         plt.ylabel("Time of Day")
