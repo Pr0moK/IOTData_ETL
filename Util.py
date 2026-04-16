@@ -9,20 +9,26 @@ class iot:
         df = self.df
         df["date"] = pd.to_datetime(df["date"])
         df["month"] = df["date"].dt.month
+        df["day"] = df["date"].dt.day
         df["time"] = df["date"].dt.strftime("%H:%M")
         df["data"] = df["date"].dt.strftime("%Y-%m-%d")
 
 
-    def GetDaylyRv1(self,month):
+    def GetDaylyPressure(self,month):
         df = self.df
         if month > "5" or month < "1":
             raise ValueError("Invalid month")
         else:
+
             df = df[(df["data"] >= f"2016-0{month}-01") & (df["data"] <= f"2016-0{month}-31")]
-            df["data"] = df["data"].str.split("-").str[2]
-            df["data"] = df["data"].apply(lambda x: x.replace("0", "") if x.startswith("0") else x)
-            plt.bar(df["data"], df["rv1"])
+            df["day"] = df["data"].str.split("-").str[2]
+
+            daily_pressure = df.groupby("day")["Press_mm_hg"].mean()
+
+            plt.bar(daily_pressure.index, daily_pressure.values)
             plt.xticks(rotation=90)
+            plt.ylabel("Pressure (mm Hg)")
+            plt.xlabel("Day of month")
             plt.show()
 
     def GetHourlyWindSpeed(self,month,day):
@@ -39,22 +45,26 @@ class iot:
             plt.xticks(df["time"][::6],rotation=90)
             plt.show()
 
-    def TemperatureOut(self,typ):
+    def TemperatureOut(self):
         df = self.df
-        typ = int(typ)
-        if typ == 1:
-            tempout = df.groupby(["month"])["T_out"].mean()
-            plt.title("Mean Temperature")
-        elif typ == 2:
-            tempout = df.groupby(["month"])["T_out"].max()
-            plt.title("Max Temperature")
-        else:
-            tempout = df.groupby(["month"])["T_out"].min()
-            plt.title("Min Temperature")
+        df["month"] = df["date"].dt.month_name()
+        df = df.groupby(["month", "day"])["T_out"].mean().reset_index()
+        month_order = ["January", "February", "March", "April", "May"]
+        df["month"] = pd.Categorical(df["month"], month_order, ordered=True)
+        df = df.sort_values("month")
+        df = df.set_index(["month"])
 
-        plt.bar(range(1,6), tempout)
+        print(df.head)
+
+        df.boxplot(by='month', column="T_out")
+
+        for i, month in enumerate(df.index.unique(), start=1):
+            y = df.loc[month]["T_out"]
+            plt.scatter([i] * len(y), y, alpha=0.3)
         plt.ylabel("Temperature (C)")
         plt.xlabel("Month")
+        plt.suptitle("")
+        plt.title("Monthly Temperature Data")
         plt.show()
 
     def TempInside(self,month,day):

@@ -7,7 +7,7 @@ datarange = datarange()
 while True:
     try:
 
-        print("1. Daily RV1\n"
+        print("1. Daily Pressure\n"
               "2. Hourly Wind Speed\n"
               "3. Temperature out\n"
               "4. Temperature inside\n"
@@ -17,14 +17,13 @@ while True:
 
         if decide == "1":
             datarange.collect_data(1)
-            iot_data.GetDaylyRv1(datarange.month)
+            iot_data.GetDaylyPressure(datarange.month)
         elif decide == "2":
             datarange.collect_data(2)
             iot_data.GetHourlyWindSpeed(datarange.month, datarange.day)
             print(datarange.month, datarange.day)
         elif decide == "3":
-            datarange.collect_data(3)
-            iot_data.TemperatureOut(datarange.datatype)
+            iot_data.TemperatureOut()
         elif decide == "4":
             datarange.collect_data(4)
             iot_data.TempInside(datarange.month, datarange.day)
