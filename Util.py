@@ -53,9 +53,6 @@ class iot:
         df["month"] = pd.Categorical(df["month"], month_order, ordered=True)
         df = df.sort_values("month")
         df = df.set_index(["month"])
-
-        print(df.head)
-
         df.boxplot(by='month', column="T_out")
 
         for i, month in enumerate(df.index.unique(), start=1):
@@ -67,22 +64,29 @@ class iot:
         plt.title("Monthly Temperature Data")
         plt.show()
 
-    def TempInside(self,month,day):
+    def TempInside(self,month):
         if month > "5" or month < "1":
             raise ValueError("Invalid month")
-        else:
-            if int(day) < 10:
-                day = "0" + str(day)
 
-        df = self.df
-        Temp = df[df["data"] == f"2016-0{month}-{day}"][["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9"]]
-        time = df[df["data"] == f"2016-0{month}-{day}"]["time"]
-        Temp.columns = ["kitchen", "living room", "laundry room", "office room", "bathroom", "outside north",
-                        "ironing room", "teenager room", "parents room"]
 
-        plt.plot(time, Temp, label="Temp")
-        plt.legend(Temp.columns, loc="upper right",fontsize="small")
-        plt.xticks(time[::6], rotation=90)
+        df = self.df.copy()
+
+        df = df[df["month"] == int(month)]
+
+        temp_day = df.groupby("day")[["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9"]].mean()
+        temp_day.columns = [
+            "kitchen", "living room", "laundry room", "office room",
+            "bathroom", "outside north", "ironing room",
+            "teenager room", "parents room"
+        ]
+
+        plt.figure(figsize=(14, 6))
+        plt.xlabel("Day")
+        plt.ylabel("Mean temperature (C)")
+        plt.xticks(temp_day.index)
+        plt.plot(temp_day.index, temp_day)
+        plt.grid(True)
+        plt.legend(temp_day.columns, loc="center left", fontsize="small", bbox_to_anchor=(1, 0.5))
         plt.show()
 
     def AvgEnergyConsumption(self):
@@ -94,7 +98,7 @@ class iot:
         daily = daily.groupby(["time", "data"])["Appliances"].mean()
         daily_matrix = daily.unstack()
         plt.figure(figsize=(12, 8))
-        sns.heatmap(daily_matrix, cmap='coolwarm', annot=False)
+        sns.heatmap(daily_matrix[::6], cmap='coolwarm', annot=False)
         plt.title("Average Appliances Energy Consumption by Day and Time")
         plt.xlabel("Day of Week")
         plt.ylabel("Time of Day")

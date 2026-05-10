@@ -15,5 +15,5 @@ class datarange:
             self.datatype = input("1. Mean\n2. Max\n3. Min\nType: ")
         if typ == 4:
             self.month = input("Type month (1-5): ")
-            self.day = input("Type day: ")
+
 

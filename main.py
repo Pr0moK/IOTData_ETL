@@ -4,6 +4,10 @@ from decide import datarange
 iot_data = iot()
 datarange = datarange()
 
+
+
+
+
 while True:
     try:
 
@@ -26,7 +30,7 @@ while True:
             iot_data.TemperatureOut()
         elif decide == "4":
             datarange.collect_data(4)
-            iot_data.TempInside(datarange.month, datarange.day)
+            iot_data.TempInside(datarange.month)
         elif decide == "5":
             iot_data.AvgEnergyConsumption()
         elif decide.lower() == "exit":
